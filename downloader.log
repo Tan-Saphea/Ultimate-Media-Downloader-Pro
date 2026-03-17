@@ -1,0 +1,24 @@
+2026-03-17 20:15:47,744 - INFO - Starting up Ultimate Media Downloader...
+2026-03-17 20:16:01,487 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/tansaphea/Documents/5. Persional/Project Learning/Download Video/main.py", line 596, in show_preview
+    self.p_dur.setText(f"Duration: {str(timedelta(seconds=int(sec))) if sec else 'Unknown'}")
+                                        ^^^^^^^^^
+NameError: name 'timedelta' is not defined
+2026-03-17 20:16:17,322 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/tansaphea/Documents/5. Persional/Project Learning/Download Video/main.py", line 596, in show_preview
+    self.p_dur.setText(f"Duration: {str(timedelta(seconds=int(sec))) if sec else 'Unknown'}")
+                                        ^^^^^^^^^
+NameError: name 'timedelta' is not defined
+2026-03-17 20:16:20,265 - INFO - Downloading URL: https://youtu.be/rpdvUlEsodc?si=BVJ_fVLK4l7gYeCb
+2026-03-17 20:16:39,831 - INFO - Downloading URL: https://youtu.be/rpdvUlEsodc?si=BVJ_fVLK4l7gYeCb
+2026-03-17 20:21:46,690 - ERROR - Uncaught exception
+Traceback (most recent call last):
+  File "/Users/tansaphea/Documents/5. Persional/Project Learning/Download Video/main.py", line 233, in <module>
+    class FlowLayout(ui_layout_placeholder):
+                     ^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'ui_layout_placeholder' is not defined
+2026-03-17 20:22:18,041 - INFO - Starting up Ultimate Media Downloader...
+2026-03-17 20:22:56,396 - INFO - Downloading URL: https://youtu.be/2gc4DhIung4?si=p6UZuhIh3yGriFnl
+2026-03-17 20:28:44,296 - INFO - Downloading URL: https://youtu.be/p_RElwRi5dY?si=7MGGsoCoXhoG4wTB
