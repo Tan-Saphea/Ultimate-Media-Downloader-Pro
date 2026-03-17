@@ -1,10 +1,10 @@
-name: Build Cross-Platform Releases
+name: Build Windows Release
 
 on:
   push:
     branches: [ "main" ]
     tags:
-      - 'v*'  # Trigger release automatically when a tag matching 'v*' is created (e.g. v1.0.0)
+      - 'v*'  # Triggers release when a tag like v1.0.0 is pushed
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:  # Allows manual triggering
@@ -13,7 +13,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     permissions:
-      contents: write  # Needed for softprops/action-gh-release to upload files
+      contents: write  # Crucial for the release upload permission
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,82 +23,40 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install PyInstaller and Application Dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller PyQt5 yt-dlp
 
-      # Uses our build.py which runs pyinstaller with --windowed --onefile and hidden imports
-      - name: Build Application with setup script
-        run: python build.py
+      - name: Create fallback JSON files
+        # Prevents PyInstaller from failing if git ignored these local development files
+        run: |
+          if (!(Test-Path -Path settings.json)) { Set-Content -Path settings.json -Value "{}" }
+          if (!(Test-Path -Path history.json)) { Set-Content -Path history.json -Value "[]" }
 
-      - name: Compile Inno Setup Installer
-        run: iscc installer.iss
+      - name: Build Application with PyInstaller
+        # We use ';' to separate paths on Windows for --add-data
+        run: >
+          pyinstaller --noconfirm --windowed --onefile 
+          --name "UltimateMediaDownloader" 
+          --hidden-import "yt_dlp" 
+          --hidden-import "PyQt5" 
+          --add-data "me.jpg;." 
+          --add-data "settings.json;." 
+          --add-data "history.json;." 
+          main.py
 
-      - name: Upload Windows Installer Artifact
+      - name: Upload Windows executable Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-UltimateMediaDownloaderSetup
-          path: InnoOutput/UltimateMediaDownloaderSetup.exe
+          name: UltimateMediaDownloader-Windows
+          path: dist/UltimateMediaDownloader.exe
 
-      # Automatically uploads the .exe to GitHub Releases when a version tag is pushed
-      - name: Upload Release Asset (Windows)
+      - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: InnoOutput/UltimateMediaDownloaderSetup.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-macos:
-    runs-on: macos-latest
-    permissions:
-      contents: write  # Needed for softprops/action-gh-release to upload files
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install PyInstaller and Application Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pyinstaller PyQt5 yt-dlp
-
-      # Uses our build.py which runs pyinstaller with --windowed --onefile and hidden imports
-      - name: Build Application with setup script
-        run: python build.py
-
-      - name: Install create-dmg
-        run: brew install create-dmg
-
-      - name: Package into a macOS DMG format
-        run: |
-          create-dmg \
-            --volname "Ultimate Media Downloader Pro" \
-            --window-pos 200 120 \
-            --window-size 600 400 \
-            --icon-size 100 \
-            --icon "UltimateMediaDownloader.app" 200 190 \
-            --hide-extension "UltimateMediaDownloader.app" \
-            --app-drop-link 400 190 \
-            "UltimateMediaDownloader.dmg" \
-            "dist/UltimateMediaDownloader.app"
-            
-      - name: Upload macOS DMG Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macOS-UltimateMediaDownloader
-          path: UltimateMediaDownloader.dmg
-
-      # Automatically uploads the .dmg to GitHub Releases when a version tag is pushed
-      - name: Upload Release Asset (macOS)
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: UltimateMediaDownloader.dmg
+          files: dist/UltimateMediaDownloader.exe
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
